@@ -9,6 +9,22 @@
 
 ## Installation 
 
+## NOTE:
+
+```
+Now Oauth2 now broken you have to use Google Chrome Cookies, todo that need install chrome by
+
+1. wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+2. sudo dpkg -i google-chrome-stable_current_amd64.deb
+3. if you on root do "google-chrome --no-sandbox" if not in root do normal "google-chrome"
+
+Then go to YouTube and Login then close browser after use dummy account (DO NOT USE YOUR MAIN ACCOUNT)
+
+if you using a VPS / Delecated VPS, make sure have X11 enabled if VPS / Delecated VPS has no Displays / Desktop Envionment.
+
+then just run code then all work. but not sure how long stay working so Report Bugs/Issues.
+```
+
 ```sh
 > npm i spotifydl-core
 ```
