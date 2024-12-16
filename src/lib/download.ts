@@ -73,8 +73,7 @@ export const downloadYT = async (url: string, destinationDir: string): Promise<B
         ytdl(url, {
             extractAudio: true,
             audioFormat: 'mp3',
-            username: 'oauth2',
-            password: "''",
+            cookiesFromBrowser: 'chrome:~/.config/google-chrome/',
             audioQuality: 0,
             output: `${outputPathTemp}`,
             referer: `${url}`
