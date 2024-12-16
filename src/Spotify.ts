@@ -118,10 +118,10 @@ export default class SpotifyFetcher extends SpotifyApi {
     downloadTrackFromInfo = async (info: SongDetails, destinationDir: string, data: any): Promise<Buffer> => {
         const link = await getYtlink(`${info.name} ${info.artists[0]}`)
         if (!link) throw new SpotifyDlError(`Couldn't get a download URL for the track: ${info.name}`)
-        return await downloadYT(link, destinationDir)
+        return await downloadYT(link, destinationDir, data)
     }
 
-    private downloadBatch = async (url: string, type: 'album' | 'playlist', destinationDir: string): Promise<(string | Buffer)[]> => {
+    private downloadBatch = async (url: string, type: 'album' | 'playlist', destinationDir: string, data: any): Promise<(string | Buffer)[]> => {
         await this.verifyCredentials()
         const playlist = await this[type === 'album' ? 'getAlbum' : 'getPlaylist'](url)
         return Promise.all(
@@ -140,14 +140,14 @@ export default class SpotifyFetcher extends SpotifyApi {
      * @param url URL of the playlist
      * @returns `Promise<(string|Buffer)[]>`
      */
-    downloadPlaylist = async (url: string, destinationDir: string): Promise<(string | Buffer)[]> => await this.downloadBatch(url, 'playlist', destinationDir)
+    downloadPlaylist = async (url: string, destinationDir: string, data: any): Promise<(string | Buffer)[]> => await this.downloadBatch(url, 'playlist', destinationDir, data)
 
     /**
      * Downloads the tracks of a Album
      * @param url URL of the Album
      * @returns `Promise<(string|Buffer)[]>`
      */
-    downloadAlbum = async (url: string, destinationDir: string): Promise<(string | Buffer)[]> => await this.downloadBatch(url, 'album', destinationDir)
+    downloadAlbum = async (url: string, destinationDir: string, data: any): Promise<(string | Buffer)[]> => await this.downloadBatch(url, 'album', destinationDir, data)
 
     /**
      * Gets the info of tracks from playlist URL
