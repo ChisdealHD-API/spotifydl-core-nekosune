@@ -128,12 +128,7 @@ const links = {
     const data = await spotify.getTrack(links.song) // Waiting for the data 🥱
     console.log('Downloading: ', data.name, 'by:', data.artists.join(' ')) // Keep an eye on the progress
     const song = await spotify.downloadTrack(links.song, __dirname + `/downloads/${data.artists[0]} - ${data.name}.mp3`, {
-            extractAudio: true,
-            audioFormat: 'mp3',
             cookiesFromBrowser: 'chrome:~/.config/google-chrome/',
-            audioQuality: 0,
-            output: `${outputPathTemp}`,
-            referer: `${url}`
         }) // Downloading goes brr brr 
     fs.writeFileSync('song.mp3', song) // Let's write the buffer to the woofer (i mean file, hehehe) 
 })()
