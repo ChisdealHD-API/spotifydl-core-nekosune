@@ -68,9 +68,19 @@ export const downloadYT = async (url: string, destinationDir: string, data: any)
     const outputPathTemp = `${os.tmpdir()}/${Math.random().toString(36).slice(-5)}.mp3`
     const outputPath = `${destinationDir}`
 
+    const cookiesFromBrowser = data.cookiesFromBrowser || ''
+    
     return new Promise(async (resolve, reject) => {
         // Get the stream from yt-dlp
-        ytdl(url, data).then(async () => {
+        ytdl(url, {
+            extractAudio: true,
+            audioFormat: 'mp3',
+            cookiesFromBrowser: 'chrome:~/.config/google-chrome/',
+            audioQuality: 0,
+            output: `${outputPathTemp}`,
+            referer: `${url}`,
+            ...(cookiesFromBrowser && { cookiesFromBrowser })
+        }).then(async () => {
             Ffmpeg()
                 .input(outputPathTemp)
                 .audioBitrate(128)
