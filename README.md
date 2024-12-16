@@ -23,6 +23,8 @@ Then go to YouTube and Login then close browser after use dummy account (DO NOT 
 if you using a VPS / Delecated VPS, make sure have X11 enabled if VPS / Delecated VPS has no Displays / Desktop Envionment.
 
 then just run code then all work. but not sure how long stay working so Report Bugs/Issues.
+
+this method only supports Linux / WSL2 Linux, havent work way round make Windows work yet.
 ```
 
 ```sh
