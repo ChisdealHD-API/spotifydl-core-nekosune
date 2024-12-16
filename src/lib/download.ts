@@ -64,20 +64,13 @@ import { join } from 'path'
  * @returns `Buffer`
  * @throws Error if the URL is invalid
  */
-export const downloadYT = async (url: string, destinationDir: string): Promise<Buffer> => {
+export const downloadYT = async (url: string, destinationDir: string, data: any): Promise<Buffer> => {
     const outputPathTemp = `${os.tmpdir()}/${Math.random().toString(36).slice(-5)}.mp3`
     const outputPath = `${destinationDir}`
 
     return new Promise(async (resolve, reject) => {
         // Get the stream from yt-dlp
-        ytdl(url, {
-            extractAudio: true,
-            audioFormat: 'mp3',
-            cookiesFromBrowser: 'chrome:~/.config/google-chrome/',
-            audioQuality: 0,
-            output: `${outputPathTemp}`,
-            referer: `${url}`
-        }).then(async () => {
+        ytdl(url, data).then(async () => {
             Ffmpeg()
                 .input(outputPathTemp)
                 .audioBitrate(128)
@@ -98,8 +91,8 @@ export const downloadYT = async (url: string, destinationDir: string): Promise<B
  * @param filename the file to save to
  * @returns filename
  */
-export const downloadYTAndSave = async (url: string, destinationDir: string): Promise<string> => {
-    const audio = await downloadYT(url, destinationDir)
+export const downloadYTAndSave = async (url: string, destinationDir: string, data: any): Promise<string> => {
+    const audio = await downloadYT(url, destinationDir, data)
     try {
         await writeFile(`${destinationDir}`, audio)
         // Move the file to the specified destination
