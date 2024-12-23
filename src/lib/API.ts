@@ -102,6 +102,8 @@ export default class SpotifyApi {
                         })
                     ).body
 
+                    console.log(playlistTracksData)
+
                     // If there are no tracks returned, break out of the loop
                     if (playlistTracksData.items.length === 0) {
                         console.log('No more tracks to fetch.')
