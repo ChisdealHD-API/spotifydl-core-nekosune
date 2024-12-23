@@ -58,13 +58,17 @@ import NodeID3 from 'node-id3' // Import node-id3
 import Ffmpeg from 'fluent-ffmpeg'
 import { join } from 'path'
 
+interface IYTDLData {
+    cookiesFromBrowser?: string;
+}
+
 /**
  * Function to download the give `YTURL`
  * @param {string} url The youtube URL to download
  * @returns `Buffer`
  * @throws Error if the URL is invalid
  */
-export const downloadYT = async (url: string, destinationDir: string, data: any): Promise<Buffer> => {
+export const downloadYT = async (url: string, destinationDir: string, data: IYTDLData): Promise<Buffer> => {
     const outputPathTemp = `${os.tmpdir()}/${Math.random().toString(36).slice(-5)}.mp3`
     const outputPath = `${destinationDir}`
 
@@ -79,10 +83,10 @@ export const downloadYT = async (url: string, destinationDir: string, data: any)
             audioQuality: 0,
             output: `${outputPathTemp}`,
             referer: `${url}`,
-        } as any;  // Cast options as `any` to bypass TypeScript type checking
+        }
         
         // Get the stream from yt-dlp
-        ytdl(url,options).then(async () => {
+        ytdl(URL, options).then(async () => {
             Ffmpeg()
                 .input(outputPathTemp)
                 .audioBitrate(128)
