@@ -168,23 +168,36 @@ export default class SpotifyFetcher extends SpotifyApi {
         data1: any
     ): Promise<(string | Buffer)[]> => {
         await this.verifyCredentials()
+    
+        // Fetch playlist or album
         const playlist = await this[type === 'album' ? 'getAlbum' : 'getPlaylist'](url)
-        return Promise.all(
-            playlist.tracks.map(async (track) => {
-                try {
-                    // Fetch track information
-                    const info = await this.getTrack(`https://open.spotify.com/track/${track}`)
-
-                    // Get YouTube link based on track name and first artist
-                    const artistNames = info.artists.length > 1 ? info.artists.join(', ') : info.artists[0]
-                    const trackPath = path.join(destinationDir, `${artistNames} - ${info.name}.mp3`)
-                    return await this.downloadTrack(`https://open.spotify.com/track/${track}`, trackPath, data1)
-                } catch (err) {
-                    return ''
-                }
-            })
-        )
-    }
+    
+        // Initialize an array to hold the results
+        const results: (string | Buffer)[] = []
+    
+        // Process each track one by one
+        for (const track of playlist.tracks) {
+            try {
+                // Fetch track information
+                const info = await this.getTrack(`https://open.spotify.com/track/${track}`)
+                
+                // Get YouTube link based on track name and first artist
+                const artistNames = info.artists.length > 1 ? info.artists.join(', ') : info.artists[0]
+                const trackPath = path.join(destinationDir, `${artistNames} - ${info.name}.mp3`)
+                
+                // Download the track and store the result
+                const downloadResult = await this.downloadTrack(`https://open.spotify.com/track/${track}`, trackPath, data1)
+                
+                // Add the result to the results array
+                results.push(downloadResult)
+            } catch (err) {
+                console.error(`Error downloading track ${track}:`, err)
+                results.push('')  // In case of an error, push an empty string or handle it as needed
+            }
+        }
+    
+        return results
+    }    
 
     /**
      * Downloads the tracks of a playlist
