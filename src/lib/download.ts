@@ -86,7 +86,7 @@ export const downloadYT = async (url: string, destinationDir: string, data: IYTD
         }
         
         // Get the stream from yt-dlp
-        ytdl(URL, options).then(async () => {
+        ytdl(url, options).then(async () => {
             Ffmpeg()
                 .input(outputPathTemp)
                 .audioBitrate(128)
