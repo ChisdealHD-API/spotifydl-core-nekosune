@@ -140,8 +140,14 @@ export default class SpotifyFetcher extends SpotifyApi {
             return buffer as any
         }
 
+        const trackPath = path.join(destinationDir, `${info.artists[0]} - ${info.name}.mp3`);
+
         // Return the file path for saved data
-        return data as any
+        return {
+            path: trackPath,
+            artists: Array.isArray(info.artists) ? info.artists : [info.artists], // Ensure artists is an array
+            name: info.name
+        } as any
     }
 
     /**
