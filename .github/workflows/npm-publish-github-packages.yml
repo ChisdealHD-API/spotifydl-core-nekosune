@@ -50,6 +50,9 @@ jobs:
       - name: Fix package.json issues (optional)
         run: npm pkg fix  # Fix any warnings/errors in package.json before publishing
 
+      - name: Authenticate with GitHub Packages
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> ~/.npmrc
+
       - name: Publish package to GitHub Packages
         run: npm publish
         env:
