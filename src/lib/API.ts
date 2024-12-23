@@ -102,14 +102,13 @@ export default class SpotifyApi {
                         })
                     ).body
 
-                    console.log(playlistTracksData)
-
                     // If there are no tracks returned, break out of the loop
                     if (playlistTracksData.items.length === 0) {
                         console.log('No more tracks to fetch.')
                         break
                     }
 
+                    // Add the fetched track IDs to the details
                     details.tracks = details.tracks.concat(
                         playlistTracksData.items.map((item) => {
                             console.log(`Processing additional track ID: ${item.track?.id}`)
@@ -120,8 +119,15 @@ export default class SpotifyApi {
                     console.log(
                         `Fetched ${playlistTracksData.items.length} additional tracks. Total: ${details.tracks.length}`
                     )
-                    // Increment the offset by the number of items fetched
-                    offset + 1 // This is the key fix, as we should increment by `limit`, not `fetchedTracks.length`
+
+                    // Increment the offset by the number of items fetched (limit)
+                    offset += MAX_LIMIT_DEFAULT
+
+                    // If `next` exists, it means more pages are available, so continue fetching.
+                    if (!playlistTracksData.next) {
+                        console.log('All tracks fetched.')
+                        break
+                    }
 
                     // Delay to avoid hitting API rate limits
                     await new Promise((resolve) => setTimeout(resolve, 500))
