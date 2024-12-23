@@ -7,6 +7,7 @@ import { downloadYT, downloadYTAndSave } from './lib/download'
 import SpotifyDlError from './lib/Error'
 import getYtlink from './lib/getYtlink'
 import metadata from './lib/metadata'
+import path from 'path'
 
 export default class SpotifyFetcher extends SpotifyApi {
     constructor(auth: IAuth) {
@@ -95,18 +96,51 @@ export default class SpotifyFetcher extends SpotifyApi {
         data1: any
     ): Promise<T extends undefined ? Buffer : string> => {
         await this.verifyCredentials()
+
+        // Fetch track information
         const info = await this.getTrack(url)
-        const link = await getYtlink(`${info.name} ${info.artists[0]}`)
-        if (!link) throw new SpotifyDlError(`Couldn't get a download URL for the track: ${info.name}`)
-        const data = await downloadYTAndSave(link, destinationDir, data1)
+
+        // Get YouTube link based on track name and first artist
+        const artistNames = info.artists.length > 1 ? info.artists.join(', ') : info.artists[0]
+        const link = await getYtlink(`${artistNames} - ${info.name}`)
+        if (!link) {
+            throw new SpotifyDlError(`Couldn't get a download URL for the track: ${info.name}`)
+        }
+
+        // Retry mechanism for downloadYTAndSave
+        const maxRetries = 3
+        let attempt = 0
+        let data: string | null = null
+
+        while (attempt < maxRetries) {
+            try {
+                data = await downloadYTAndSave(link, destinationDir, data1) // Attempt to download
+                if (data) break // Exit loop if download is successful
+            } catch (error) {
+                attempt++
+                if (attempt >= maxRetries) {
+                    throw new SpotifyDlError(
+                        `Failed to download and save the track: ${info.artists[0]} - ${info.name} after ${maxRetries} attempts.`
+                    )
+                }
+                console.warn(`Retrying download (${attempt}/${maxRetries}) for ${info.name}...`)
+            }
+        }
+
+        // Add metadata only after the file is downloaded
+        if (!data) {
+            throw new SpotifyDlError(`Download returned an invalid path for the track: ${info.name}`)
+        }
         await metadata(info, data)
+
+        // Handle buffer response when `destinationDir` is not provided
         if (!destinationDir) {
             const buffer = await promises.readFile(data)
-            unlink(data)
-            /* eslint-disable @typescript-eslint/no-explicit-any */
+            await unlink(data) // Remove the temporary file after reading
             return buffer as any
         }
-        /* eslint-disable @typescript-eslint/no-explicit-any */
+
+        // Return the file path for saved data
         return data as any
     }
 
@@ -121,13 +155,20 @@ export default class SpotifyFetcher extends SpotifyApi {
         return await downloadYT(link, destinationDir, data)
     }
 
-    private downloadBatch = async (url: string, type: 'album' | 'playlist', destinationDir: string, data1: any): Promise<(string | Buffer)[]> => {
+    private downloadBatch = async (
+        url: string,
+        type: 'album' | 'playlist',
+        destinationDir: string,
+        data1: any
+    ): Promise<(string | Buffer)[]> => {
         await this.verifyCredentials()
         const playlist = await this[type === 'album' ? 'getAlbum' : 'getPlaylist'](url)
         return Promise.all(
             playlist.tracks.map(async (track) => {
                 try {
-                    return await this.downloadTrack(track, destinationDir, data1)
+                    const info = await this.getTrack(`https://open.spotify.com/track/${track}`)
+                    const trackPath = path.join(destinationDir, `${info.artists[0]} - ${info.name}.mp3`)
+                    return await this.downloadTrack(`https://open.spotify.com/track/${track}`, trackPath, data1)
                 } catch (err) {
                     return ''
                 }
@@ -140,14 +181,16 @@ export default class SpotifyFetcher extends SpotifyApi {
      * @param url URL of the playlist
      * @returns `Promise<(string|Buffer)[]>`
      */
-    downloadPlaylist = async (url: string, destinationDir: string, data1: any): Promise<(string | Buffer)[]> => await this.downloadBatch(url, 'playlist', destinationDir, data1)
+    downloadPlaylist = async (url: string, destinationDir: string, data1: any): Promise<(string | Buffer)[]> =>
+        await this.downloadBatch(url, 'playlist', destinationDir, data1)
 
     /**
      * Downloads the tracks of a Album
      * @param url URL of the Album
      * @returns `Promise<(string|Buffer)[]>`
      */
-    downloadAlbum = async (url: string, destinationDir: string, data1: any): Promise<(string | Buffer)[]> => await this.downloadBatch(url, 'album', destinationDir, data1)
+    downloadAlbum = async (url: string, destinationDir: string, data1: any): Promise<(string | Buffer)[]> =>
+        await this.downloadBatch(url, 'album', destinationDir, data1)
 
     /**
      * Gets the info of tracks from playlist URL

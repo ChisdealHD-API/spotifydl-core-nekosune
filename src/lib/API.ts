@@ -53,29 +53,66 @@ export default class SpotifyApi {
     }
 
     extractPlaylist = async (playlistId: string): Promise<Playlist> => {
-        const data = (await this.spotifyAPI.getPlaylist(playlistId)).body
+        console.log(`Starting playlist extraction for ID: ${playlistId}`);
+    
+        let data;
+        try {
+            data = (await this.spotifyAPI.getPlaylist(playlistId)).body;
+            console.log(`Fetched playlist details: ${data.name}`);
+        } catch (error) {
+            console.error(`Failed to fetch playlist details:`, error);
+            throw new Error('Unable to fetch playlist. Verify the playlist ID and permissions.');
+        }
+    
         const details = new Playlist(
             '',
             [],
             0,
-            data.tracks.items.map((item) => item.track!.id)
-        )
-
-        details.name = data.name + ' - ' + data.owner.display_name
-        details.total_tracks = data.tracks.total
-        details.artists = data.owner.display_name ? [data.owner.display_name] : []
+            data.tracks.items.map((item) => {
+                console.log(`Processing track ID: ${item.track?.id}`);
+                return item.track!.id;
+            })
+        );
+    
+        details.name = `${data.name} - ${data.owner.display_name}`;
+        details.total_tracks = data.tracks.total;
+        details.artists = data.owner.display_name ? [data.owner.display_name] : [];
+    
+        console.log(`Playlist name: ${details.name}`);
+        console.log(`Total tracks: ${details.total_tracks}`);
+        console.log(`Initial tracks fetched: ${details.tracks.length}`);
+    
         if (data.tracks.next) {
-            let offset = details.tracks.length
+            let offset = details.tracks.length;
             while (details.tracks.length < details.total_tracks) {
-                const playlistTracksData = (
-                    await this.spotifyAPI.getPlaylistTracks(playlistId, { limit: MAX_LIMIT_DEFAULT, offset: offset })
-                ).body
-                details.tracks = details.tracks.concat(playlistTracksData.items.map((item) => item.track!.id))
-                offset += MAX_LIMIT_DEFAULT
+                try {
+                    console.log(`Fetching additional tracks. Offset: ${offset}`);
+                    const playlistTracksData = (
+                        await this.spotifyAPI.getPlaylistTracks(playlistId, { limit: MAX_LIMIT_DEFAULT, offset: offset })
+                    ).body;
+    
+                    details.tracks = details.tracks.concat(
+                        playlistTracksData.items.map((item) => {
+                            console.log(`Processing additional track ID: ${item.track?.id}`);
+                            return item.track!.id;
+                        })
+                    );
+    
+                    console.log(`Fetched ${playlistTracksData.items.length} additional tracks. Total: ${details.tracks.length}`);
+                    offset += MAX_LIMIT_DEFAULT;
+    
+                    // Introduce a delay to avoid hitting API rate limits
+                    await new Promise((resolve) => setTimeout(resolve, 500));
+                } catch (error) {
+                    console.error(`Failed to fetch additional tracks at offset ${offset}:`, error);
+                    throw new Error('Error while fetching additional tracks.');
+                }
             }
         }
-        return details
-    }
+    
+        console.log(`Playlist extraction complete. Total tracks: ${details.tracks.length}`);
+        return details;
+    };    
 
     extractAlbum = async (albumId: string): Promise<Playlist> => {
         const data = (await this.spotifyAPI.getAlbum(albumId)).body

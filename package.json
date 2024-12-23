@@ -1,6 +1,6 @@
 {
   "name": "spotifydl-core-nekosune",
-  "version": "0.2.3",
+  "version": "0.3.9",
   "description": "Spotify downloader for node",
   "main": "dist/index.js",
   "files": [

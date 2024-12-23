@@ -54,9 +54,7 @@ import SpotifyDlError from './Error'
 import { readFile, unlink, writeFile, move, createReadStream } from 'fs-extra'
 import axios from 'axios'
 import { Buffer } from 'buffer' // Ensure Buffer is imported
-import NodeID3 from 'node-id3' // Import node-id3
 import Ffmpeg from 'fluent-ffmpeg'
-import { join } from 'path'
 
 interface IYTDLData {
     cookiesFromBrowser?: string;
