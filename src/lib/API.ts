@@ -53,92 +53,27 @@ export default class SpotifyApi {
     }
 
     extractPlaylist = async (playlistId: string): Promise<Playlist> => {
-        console.log(`Starting playlist extraction for ID: ${playlistId}`)
-
-        let data
-        try {
-            data = (await this.spotifyAPI.getPlaylist(playlistId)).body
-            console.log(`Fetched playlist details: ${data.name}`)
-        } catch (error) {
-            console.error(`Failed to fetch playlist details:`, error)
-            throw new Error('Unable to fetch playlist. Verify the playlist ID and permissions.')
-        }
-
+        const data = (await this.spotifyAPI.getPlaylist(playlistId)).body
         const details = new Playlist(
             '',
             [],
             0,
-            data.tracks.items.map((item) => {
-                console.log(`Processing track ID: ${item.track?.id}`)
-                return item.track!.id
-            })
+            data.tracks.items.map((item) => item.track!.id)
         )
 
-        details.name = `${data.name} - ${data.owner.display_name}`
+        details.name = data.name + ' - ' + data.owner.display_name
         details.total_tracks = data.tracks.total
         details.artists = data.owner.display_name ? [data.owner.display_name] : []
-
-        console.log(`Playlist name: ${details.name}`)
-        console.log(`Total tracks: ${details.total_tracks}`)
-        console.log(`Initial tracks fetched: ${details.tracks.length}`)
-
         if (data.tracks.next) {
-            const pages = Math.ceil(details.total_tracks / MAX_LIMIT_DEFAULT)
-            let offset = 0
-
-            console.log(
-                `Starting pagination. Total tracks: ${details.total_tracks}, Initial offset: ${offset}, Total pages: ${pages}`
-            )
-
-            while (offset < details.total_tracks) {
-                try {
-                    console.log(
-                        `Fetching additional tracks. Page: ${Math.floor(offset / MAX_LIMIT_DEFAULT) + 1}, Offset: ${offset}, Limit: ${MAX_LIMIT_DEFAULT}`
-                    )
-                    const playlistTracksData = (
-                        await this.spotifyAPI.getPlaylistTracks(playlistId, {
-                            limit: MAX_LIMIT_DEFAULT,
-                            offset: offset
-                        })
-                    ).body
-
-                    // If there are no tracks returned, break out of the loop
-                    if (playlistTracksData.items.length === 0) {
-                        console.log('No more tracks to fetch.')
-                        break
-                    }
-
-                    // Add the fetched track IDs to the details
-                    details.tracks = details.tracks.concat(
-                        playlistTracksData.items.map((item) => {
-                            console.log(`Processing additional track ID: ${item.track?.id}`)
-                            return item.track!.id
-                        })
-                    )
-
-                    console.log(
-                        `Fetched ${playlistTracksData.items.length} additional tracks. Total: ${details.tracks.length}`
-                    )
-
-                    // Increment the offset by the number of items fetched (limit)
-                    offset += MAX_LIMIT_DEFAULT
-
-                    // If `next` exists, it means more pages are available, so continue fetching.
-                    if (!playlistTracksData.next) {
-                        console.log('All tracks fetched.')
-                        break
-                    }
-
-                    // Delay to avoid hitting API rate limits
-                    await new Promise((resolve) => setTimeout(resolve, 500))
-                } catch (error) {
-                    console.error(`Failed to fetch additional tracks at offset ${offset}:`, error)
-                    throw new Error('Error while fetching additional tracks.')
-                }
+            let offset = details.tracks.length
+            while (details.tracks.length < details.total_tracks) {
+                const playlistTracksData = (
+                    await this.spotifyAPI.getPlaylistTracks(playlistId, { limit: MAX_LIMIT_DEFAULT, offset: offset })
+                ).body
+                details.tracks = details.tracks.concat(playlistTracksData.items.map((item) => item.track!.id))
+                offset += MAX_LIMIT_DEFAULT
             }
         }
-
-        console.log(`Playlist extraction complete. Total tracks: ${details.tracks.length}`)
         return details
     }
 
