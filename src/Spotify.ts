@@ -172,9 +172,7 @@ export default class SpotifyFetcher extends SpotifyApi {
         return Promise.all(
             playlist.tracks.map(async (track) => {
                 try {
-                    const info = await this.getTrack(`https://open.spotify.com/track/${track}`)
-                    const trackPath = path.join(destinationDir, `${info.artists[0]} - ${info.name}.mp3`)
-                    return await this.downloadTrack(`https://open.spotify.com/track/${track}`, trackPath, data1)
+                    return await this.downloadTrack(`https://open.spotify.com/track/${track}`, destinationDir, data1)
                 } catch (err) {
                     return ''
                 }
