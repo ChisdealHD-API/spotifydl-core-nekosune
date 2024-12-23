@@ -119,7 +119,7 @@ export default class SpotifyApi {
                         `Fetched ${playlistTracksData.items.length} additional tracks. Total: ${details.tracks.length}`
                     )
                     // Increment the offset by the number of items fetched
-                    offset += MAX_LIMIT_DEFAULT // This is the key fix, as we should increment by `limit`, not `fetchedTracks.length`
+                    offset + 1 // This is the key fix, as we should increment by `limit`, not `fetchedTracks.length`
 
                     // Delay to avoid hitting API rate limits
                     await new Promise((resolve) => setTimeout(resolve, 500))
