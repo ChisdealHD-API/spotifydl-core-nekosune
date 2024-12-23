@@ -27,9 +27,6 @@ jobs:
       - name: Install dependencies
         run: npm install  # Install all necessary dependencies for the project
 
-      - name: Run tests (optional)
-        run: npm test  # Run your test scripts if you have any (optional step)
-
   publish:
     needs: build  # The publish job depends on the build job
     runs-on: ubuntu-latest
