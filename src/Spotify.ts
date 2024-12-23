@@ -117,19 +117,20 @@ export default class SpotifyFetcher extends SpotifyApi {
                 data = await downloadYTAndSave(link, destinationDir, data1) // Attempt to download
                 if (data) break // Exit loop if download is successful
             } catch (error) {
+                console.log(error)
                 attempt++
                 if (attempt >= maxRetries) {
                     throw new SpotifyDlError(
-                        `Failed to download and save the track: ${info.artists[0]} - ${info.name} after ${maxRetries} attempts.`
+                        `Failed to download and save the track: ${artistNames} - ${info.name} after ${maxRetries} attempts.`
                     )
                 }
-                console.warn(`Retrying download (${attempt}/${maxRetries}) for ${info.name}...`)
+                console.warn(`Retrying download (${attempt}/${maxRetries}) for ${artistNames} - ${info.name}...`)
             }
         }
 
         // Add metadata only after the file is downloaded
         if (!data) {
-            throw new SpotifyDlError(`Download returned an invalid path for the track: ${info.name}`)
+            throw new SpotifyDlError(`Download returned an invalid path for the track: ${artistNames} - ${info.name}`)
         }
         await metadata(info, data)
 
