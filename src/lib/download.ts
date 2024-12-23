@@ -71,15 +71,18 @@ export const downloadYT = async (url: string, destinationDir: string, data: any)
     const cookiesFromBrowser1 = data.cookiesFromBrowser || ''
     
     return new Promise(async (resolve, reject) => {
-        // Get the stream from yt-dlp
-        ytdl(url, {
+        // Bypass TypeScript type checking for the unknown 'cookiesFromBrowser' property
+        const options = {
             extractAudio: true,
             audioFormat: 'mp3',
             cookiesFromBrowser: cookiesFromBrowser1,
             audioQuality: 0,
             output: `${outputPathTemp}`,
             referer: `${url}`,
-        }).then(async () => {
+        } as any;  // Cast options as `any` to bypass TypeScript type checking
+        
+        // Get the stream from yt-dlp
+        ytdl(url,options).then(async () => {
             Ffmpeg()
                 .input(outputPathTemp)
                 .audioBitrate(128)
