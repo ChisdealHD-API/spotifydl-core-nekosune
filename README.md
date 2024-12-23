@@ -59,7 +59,9 @@ await spotify.getTrack(track_url)
 ```
 **Download Track/Song ⬇️**
 ```JS
-await spotify.downloadTrack(track_url, file_name)
+await spotify.downloadTrack(track_url, file_name, {
+    cookiesFromBrowser: 'chrome:~/.config/google-chrome/',
+})
 
 // For Example: track_url = 'https://open.spotify.com/track/1Ub6VfiTXgyV8HnsfzrZzC?si=4412ef4ebd8141ab' & file_name = 'song.mp3'
 
@@ -98,7 +100,9 @@ await spotify.getPlylist(playlist_url)
 **Download an Entire playlist**
 
 ```JS
-await spotify.downloadPlaylist(playlist_url)
+await spotify.downloadPlaylist(playlist_url, file_name, {
+    cookiesFromBrowser: 'chrome:~/.config/google-chrome/',
+})
 
 //It'll return an array containing the Buffer of the songs in the playlist
 ```
@@ -128,8 +132,8 @@ const links = {
     const data = await spotify.getTrack(links.song) // Waiting for the data 🥱
     console.log('Downloading: ', data.name, 'by:', data.artists.join(' ')) // Keep an eye on the progress
     const song = await spotify.downloadTrack(links.song, __dirname + `/downloads/${data.artists[0]} - ${data.name}.mp3`, {
-            cookiesFromBrowser: 'chrome:~/.config/google-chrome/',
-        }) // Downloading goes brr brr 
+        cookiesFromBrowser: 'chrome:~/.config/google-chrome/',
+    }) // Downloading goes brr brr 
     fs.writeFileSync('song.mp3', song) // Let's write the buffer to the woofer (i mean file, hehehe) 
 })()
 
@@ -140,3 +144,12 @@ const links = {
 
 - Swapnil Soni: [Spotify-dl](https://github.com/SwapnilSoni1999/spotify-dl)
 - Fent: [Ytdl-core](https://github.com/fent/node-ytdl-core)
+
+# FEW BUGS NEED FIX
+
+- There is issue when Playlist more then 100+ it thows error to provent downloading
+- theres small bug when download gets stuck as _temp.mp3 file is not deleted to convert normal file
+- tweek it call out little less on API so be more smaller request not flood any APIS / Websites
+- Clean up stuff dont need.
+- Add my own custom backend API for predownload files if want get corrent files other then redownload back on your own API so means my custom server cache download make easyer download for you for less time.
+- need look into code more see what else to add in and fixing
