@@ -161,7 +161,7 @@ export default class SpotifyFetcher extends SpotifyApi {
         return await downloadYT(link, destinationDir, data)
     }
 
-    private downloadBatch = async (
+    downloadBatch = async (
         url: string,
         type: 'album' | 'playlist',
         destinationDir: string,
