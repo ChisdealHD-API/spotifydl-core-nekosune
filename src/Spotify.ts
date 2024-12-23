@@ -103,8 +103,9 @@ export default class SpotifyFetcher extends SpotifyApi {
         // Get YouTube link based on track name and first artist
         const artistNames = info.artists.length > 1 ? info.artists.join(', ') : info.artists[0]
         const link = await getYtlink(`${artistNames} - ${info.name}`)
+
         if (!link) {
-            throw new SpotifyDlError(`Couldn't get a download URL for the track: ${info.name}`)
+            throw new SpotifyDlError(`Couldn't get a download URL for the track: ${artistNames} - ${info.name}`)
         }
 
         // Retry mechanism for downloadYTAndSave
@@ -141,11 +142,9 @@ export default class SpotifyFetcher extends SpotifyApi {
             return buffer as any
         }
 
-        const trackPath = path.join(destinationDir, `${info.artists[0]} - ${info.name}.mp3`);
-
         // Return the file path for saved data
         return {
-            path: trackPath,
+            path: destinationDir,
             artists: Array.isArray(info.artists) ? info.artists : [info.artists], // Ensure artists is an array
             name: info.name
         } as any
@@ -173,7 +172,12 @@ export default class SpotifyFetcher extends SpotifyApi {
         return Promise.all(
             playlist.tracks.map(async (track) => {
                 try {
-                    const trackPath = path.join(destinationDir)
+                    // Fetch track information
+                    const info = await this.getTrack(`https://open.spotify.com/track/${track}`)
+
+                    // Get YouTube link based on track name and first artist
+                    const artistNames = info.artists.length > 1 ? info.artists.join(', ') : info.artists[0]
+                    const trackPath = path.join(destinationDir, `${artistNames} - ${info.name}.mp3`)
                     return await this.downloadTrack(`https://open.spotify.com/track/${track}`, trackPath, data1)
                 } catch (err) {
                     return ''
